@@ -254,6 +254,6 @@ For negative control, we use ATAC-seq peak regions obtained from 20 Glut cell li
 For positive control, we use ASoC variants (FDR < 0.05) that fall into the adult brain OCRs (PsychENCODE) as annotation. Since the number of ASoC variants that overlap with xQTL is small, the confidence intervals are very wide. The estimations might not be that accurate/meaningful. We ignore them in the plotting.
 
 ```{r torus}
-ggplot() + geom_pointrange(torus.df[1:5,], mapping = aes(x=type, y=log2.odds_ratio, 
+ggplot() + geom_pointrange(torus.df[1:6,], mapping = aes(x=type, y=log2.odds_ratio, 
                            ymin=low.CI, ymax=high.CI))
 ```

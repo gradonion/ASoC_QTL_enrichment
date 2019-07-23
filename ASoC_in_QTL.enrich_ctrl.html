@@ -1134,6 +1134,20 @@ neg_mQTL
 </tr>
 <tr>
 <td style="text-align:left;">
+neg_haQTL
+</td>
+<td style="text-align:right;">
+2.562
+</td>
+<td style="text-align:right;">
+2.340
+</td>
+<td style="text-align:right;">
+2.784
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 pos_eQTL
 </td>
 <td style="text-align:right;">
@@ -1160,13 +1174,27 @@ pos_mQTL
 8.690
 </td>
 </tr>
+<tr>
+<td style="text-align:left;">
+pos_haQTL
+</td>
+<td style="text-align:right;">
+3.574
+</td>
+<td style="text-align:right;">
+-10.824
+</td>
+<td style="text-align:right;">
+17.971
+</td>
+</tr>
 </tbody>
 </table>
 <p>We use TORUS to estimate the enrichment of Glut ASoC variants for xQTL SNPs. The table presents the log2-odds ratios and their 95% confidence intervals.</p>
 <p>Unlike the previous <span class="math inline">\(\pi 1\)</span> analyses, we keep all of the QTL statistics per SNP.</p>
 <p>For negative control, we use ATAC-seq peak regions obtained from 20 Glut cell lines as annotation.</p>
 <p>For positive control, we use ASoC variants (FDR &lt; 0.05) that fall into the adult brain OCRs (PsychENCODE) as annotation. Since the number of ASoC variants that overlap with xQTL is small, the confidence intervals are very wide. The estimations might not be that accurate/meaningful. We ignore them in the plotting.</p>
-<pre class="r"><code>ggplot() + geom_pointrange(torus.df[1:5,], mapping = aes(x=type, y=log2.odds_ratio, 
+<pre class="r"><code>ggplot() + geom_pointrange(torus.df[1:6,], mapping = aes(x=type, y=log2.odds_ratio, 
                            ymin=low.CI, ymax=high.CI))</code></pre>
 <p><img src="Figs/torus-1.png" width="768" style="display: block; margin: auto;" /></p>
 </div>
