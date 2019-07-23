@@ -1196,7 +1196,7 @@ pos_haQTL
 <p>For positive control, we use ASoC variants (FDR &lt; 0.05) that fall into the adult brain OCRs (PsychENCODE) as annotation. Since the number of ASoC variants that overlap with xQTL is small, the confidence intervals are very wide. The estimations might not be that accurate/meaningful. We ignore them in the plotting.</p>
 <pre class="r"><code>ggplot() + geom_pointrange(torus.df[1:6,], mapping = aes(x=type, y=log2.odds_ratio, 
                            ymin=low.CI, ymax=high.CI))</code></pre>
-<p><img src="Figs/torus-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p><img src="Figs/torus.res-1.png" width="768" style="display: block; margin: auto;" /></p>
 </div>
 
 
