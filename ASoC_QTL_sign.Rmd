@@ -1,0 +1,65 @@
+---
+title: "Sign Consistency between ASoC and Brain xQTL Effects"
+author: "Yifan Zhou"
+date: "7/18/2019"
+output:   
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.width=4, fig.height=4, fig.path='Figs/',
+  echo=TRUE, warning=FALSE, message=FALSE, comment = NA, fig.align = 'center')
+```
+
+For SNPs that are both ASoC variants and xQTLs (eQTLs/mQTLs/haQTLs), we compare the direction of effects of ASoC vs. QTL. A pair of concordant effects means that an ASoC allele associated with greater chromatin accessibility is also associated with higher eQTL gene expression / mQTL DNA methylation / haQTL histone acetylation.
+
+```{r}
+library(data.table)
+library(dplyr)
+library(ggplot2)
+library(knitr)
+library(kableExtra)
+options(stringsAsFactors = F)
+ASoC <- read.delim('~/Downloads/ASoC/data/ASoC_20lines_Glut_list.txt')
+ASoC.signif <- filter(ASoC,FDR < 0.05)
+```
+
+```{r}
+sign.analysis <- function(qtl.name){
+  qtl.signif <- as.data.frame(fread(paste0('~/Downloads/ASoC/QTL_enrich/Brain_',
+                                           qtl.name,'s_Bonferroni.txt')))
+  tmp <- match(ASoC.signif$rsID,qtl.signif$SNPid)
+  ASoC.signif.indx <- na.omit(tmp)
+  asoc.fold <- log10(ASoC.signif$ALT[!is.na(tmp)] / ASoC.signif$REF[!is.na(tmp)])
+  qtl.spearman <- qtl.signif$SpearmanRho[ASoC.signif.indx]
+  asoc.fold.sign <- asoc.fold>0
+  qtl.spearman.sign <- qtl.spearman>0
+  num_same <- sum(asoc.fold.sign*qtl.spearman.sign) + 
+    sum((!asoc.fold.sign)*(!qtl.spearman.sign))
+  num_diff <- length(asoc.fold.sign) - num_same
+  cat('Number of concordant pairs:', num_same)
+  cat('\n')
+  cat('Number of discordant pairs:', num_diff)
+  qplot(asoc.fold, qtl.spearman, xlab = 'ASoC log10(Alt/Ref)', 
+        ylab = paste(qtl.name,'Spearman Rho'))
+}
+```
+
+## ASoC and eQTL
+```{r}
+sign.analysis('eQTL')
+```
+
+## ASoC and mQTL
+```{r}
+sign.analysis('mQTL')
+```
+
+## ASoC and haQTL
+```{r}
+sign.analysis('haQTL')
+```
+

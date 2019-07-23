@@ -1,0 +1,254 @@
+---
+title: "Brain xQTL enrichment in Glut ASoC variants"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.width=8, fig.height=5, fig.path='Figs/',
+  echo=TRUE, warning=FALSE, message=FALSE, comment = NA, fig.align = 'center')
+```
+
+Brain xQTL(eQTL, mQTL and haQTL) genome-wide association statistics are obtained from [the Brain xQTL Serve](http://mostafavilab.stat.ubc.ca/xQTLServe/).
+
+## Enrichment analysis w/ $\pi 1$ statistics
+
+In the following $\pi 1$ analyses, for each SNP, we only keep the statistics (p value) of its nearest association.
+
+```{r}
+wd <- '~/Downloads/ASoC/QTL_enrich/'
+library(data.table)
+library(dplyr)
+library(ggplot2)
+library(knitr)
+library(kableExtra)
+options(stringsAsFactors = F)
+ASoC <- read.delim('~/Downloads/ASoC/data/ASoC_20lines_Glut_list.txt')
+pval_thres <- c(6:2)
+fdr_thres <- c(0.01,0.05,0.1,0.25)
+```
+
+We analyze the enrichment of brain xQTLs by ASoC variants by estimating $\pi 1$ of their matching p values under the xQTL test. For comparison, we generate multiple sets of ASoC variants by varying the ASoC p value/FDR threhold and estimate their $\pi 1$ levels.
+```{r functions}
+# get pi1 alternative estimation
+get_pi1 <- function(pval,thres){
+  pi1 <- rep(NA,length(thres))
+  for (i in 1:length(thres)){
+    pi1[i] <- (length(pval) - sum(pval>thres[i])/(1-thres[i])) / length(pval)
+  }
+  return(pi1)
+}
+pi1_est_pval <- function(brain.all.filtered, thres){
+  pi1.est <- data.frame(matrix(nrow = length(thres), ncol = 3))
+  names(pi1.est) <- c('-log10(pval) threshold','pi1 estimation','# of SNPs matched')
+  for (i in 1:length(thres)){
+    pi1.est[i,1] <- thres[i]
+    ASoC.signif.SNPs <- ASoC$rsID[ASoC$X.log10P > thres[i]]
+    ## Get ASoC variants' matching xQTL pvals:
+    tmp <- match(ASoC.signif.SNPs,brain.all.filtered$SNPid)
+    ASoC.signif.indx <- na.omit(tmp)
+    # cat(length(ASoC.signif.indx),'ASoC variants matched out of',length(ASoC.signif.SNPs),'in total.\n')
+    ASoC.pval <- brain.all.filtered$pval[ASoC.signif.indx]
+    pi1.est[i,2] <- get_pi1(ASoC.pval,0.5)
+    pi1.est[i,3] <- length(ASoC.signif.indx)
+    # plot1 <- qplot(ASoC.pval, bins=50, xlab = 'ASoC QTL p values')
+  }
+  # pi1.control <- rep(NA,5)
+  # for (i in 1:5){
+  #   rand.indx <- sample(nrow(brain.all.filtered), 5000) ## ??? how many random SNPs
+  #   ctrl.pval <- brain.all.filtered$pval[rand.indx]
+  #   pi1.control[i] <- get_pi1(ctrl.pval,0.5)
+  # } 
+  print(kable(pi1.est, row.names = F, digits = 4, 
+              caption = 'pi1 estimations at various ASoC p value significance levels:') %>% 
+          kable_styling(position = 'center',full_width = T) )
+  return(pi1.est)
+}
+pi1_est_fdr <- function(brain.all.filtered, thres){
+  pi1.est <- data.frame(matrix(nrow = length(thres), ncol = 3))
+  names(pi1.est) <- c('fdr threshold','pi1 estimation','# of SNPs matched')
+  for (i in 1:length(thres)){
+    pi1.est[i,1] <- thres[i]
+    ASoC.signif.SNPs <- ASoC$rsID[ASoC$FDR < thres[i]]
+    ## Get ASoC variants' matching xQTL pvals:
+    tmp <- match(ASoC.signif.SNPs,brain.all.filtered$SNPid)
+    ASoC.signif.indx <- na.omit(tmp)
+    # cat(length(ASoC.signif.indx),'ASoC variants matched out of',length(ASoC.signif.SNPs),'in total.\n')
+    ASoC.pval <- brain.all.filtered$pval[ASoC.signif.indx]
+    pi1.est[i,2] <- get_pi1(ASoC.pval,0.5)
+    pi1.est[i,3] <- length(ASoC.signif.indx)
+    # plot1 <- qplot(ASoC.pval, bins=50, xlab = 'ASoC QTL p values')
+  }
+  print(kable(pi1.est, row.names = F, digits = 4, 
+              caption = 'pi1 estimations at various ASoC fdr levels:') %>% 
+          kable_styling(position = 'center',full_width = T) )
+  return(pi1.est)
+}
+```
+
+### Brain eQTL enrichment
+
+```{r eQTL, results='asis'}
+brain.QTLs_by_dist <- as.data.frame(fread(paste0(wd,'Brain_eQTLs_by_dist.w_zscores.txt')))
+eQTL.pi1_pval <- pi1_est_pval(brain.QTLs_by_dist, pval_thres)
+eQTL.pi1_fdr <- pi1_est_fdr(brain.QTLs_by_dist, fdr_thres)
+```
+
+#### Negative control using random SNPs in OCRs
+
+For negative control, we look at the p value distribution of random QTLs that fall into the open chromatin regions (OCRs) of Glutamatergic cell lines (peaks called from all 20 Glut lines) and estimate its $\pi 1$.
+```{r eQTL-neg}
+QTLs_in_OCR.df <- as.data.frame(fread(paste0(wd,'QTL_in_OCR/brain_eQTL_hg38_in_CN_peaks.bed')))
+names(QTLs_in_OCR.df) <- c('chr','start','end','rsID')
+QTLs_in_OCR.pval <- brain.QTLs_by_dist$pval[match(QTLs_in_OCR.df$rsID, brain.QTLs_by_dist$SNPid)]
+QTL.random.pi1 <- get_pi1(QTLs_in_OCR.pval,0.5)
+## Get a distribution
+# random.pi1 <- rep(NA,1000)
+# for (i in 1:1000){
+#   rand.indx <- sample(length(eQTLs_in_OCR.pval),5000)
+#   random.pi1[i] <- get_pi1(eQTLs_in_OCR.pval[rand.indx],0.5)
+# }
+eQTL.pi1_pval[length(pval_thres)+1,1] <- 'random'
+eQTL.pi1_pval[length(pval_thres)+1,2] <- QTL.random.pi1
+eQTL.pi1_fdr[length(fdr_thres)+1,1] <- 'random'
+eQTL.pi1_fdr[length(fdr_thres)+1,2] <- QTL.random.pi1
+cat('pi1 of random control:', QTL.random.pi1)
+```
+
+#### Positive control using ASoC variants in adult brain OCRs
+
+For positive control, we look at the QTL p value distribution of ASoC variants (FDR < 0.05) that fall into the adult brain OCRs (PsychENCODE) and estimate the $\pi 1$.
+```{r}
+ASoC.adult_OCR <- as.data.frame(fread(paste0(wd,'QTL_in_OCR/ASoC_Glut20_in_adult_OCR.bed')))
+names(ASoC.adult_OCR) <- c('chr','start','end','rsID','FDR')
+ASoC.adult_OCR.signif <- filter(ASoC.adult_OCR, FDR<0.05)
+cat('Out of 5611 ASoC variants,',nrow(ASoC.adult_OCR.signif),'fall in adult brain OCRs.')
+```
+
+```{r eQTL-pos}
+match.indx <- match(ASoC.adult_OCR.signif$rsID,brain.QTLs_by_dist$SNPid)
+match.indx <- na.omit(match.indx)
+QTL.adult.pi1 <- get_pi1(brain.QTLs_by_dist$pval[match.indx],0.5) # 0.4551551
+
+eQTL.pi1_pval[length(pval_thres)+2,1] <- 'positive'
+eQTL.pi1_pval[length(pval_thres)+2,2] <- QTL.adult.pi1
+eQTL.pi1_fdr[length(fdr_thres)+2,1] <- 'positive'
+eQTL.pi1_fdr[length(fdr_thres)+2,2] <- QTL.adult.pi1
+cat('pi1 of', length(match.indx),'matched positive control SNPs:', QTL.adult.pi1)
+```
+
+### Brain mQTL enrichment
+
+```{r mQTL, results='asis'}
+brain.QTLs_by_dist <- as.data.frame(fread(paste0(wd,'Brain_mQTLs_by_dist.w_zscores.txt')))
+mQTL.pi1_pval <- pi1_est_pval(brain.QTLs_by_dist, pval_thres)
+mQTL.pi1_fdr <- pi1_est_fdr(brain.QTLs_by_dist, fdr_thres)
+```
+
+#### Negative control using random SNPs in OCRs
+
+```{r mQTL-neg}
+QTLs_in_OCR.df <- as.data.frame(fread(paste0(wd,'QTL_in_OCR/brain_mQTL_hg38_in_CN_peaks.bed')))
+names(QTLs_in_OCR.df) <- c('chr','start','end','rsID')
+QTLs_in_OCR.pval <- brain.QTLs_by_dist$pval[match(QTLs_in_OCR.df$rsID, brain.QTLs_by_dist$SNPid)]
+QTL.random.pi1 <- get_pi1(QTLs_in_OCR.pval,0.5)
+
+mQTL.pi1_pval[length(pval_thres)+1,1] <- 'random'
+mQTL.pi1_pval[length(pval_thres)+1,2] <- QTL.random.pi1
+mQTL.pi1_fdr[length(fdr_thres)+1,1] <- 'random'
+mQTL.pi1_fdr[length(fdr_thres)+1,2] <- QTL.random.pi1
+cat('pi1 of random control:', QTL.random.pi1)
+```
+
+#### Positive control using ASoC variants in adult brain OCRs
+```{r mQTL-pos}
+match.indx <- match(ASoC.adult_OCR.signif$rsID,brain.QTLs_by_dist$SNPid)
+match.indx <- na.omit(match.indx)
+QTL.adult.pi1 <- get_pi1(brain.QTLs_by_dist$pval[match.indx],0.5) # 
+
+mQTL.pi1_pval[length(pval_thres)+2,1] <- 'positive'
+mQTL.pi1_pval[length(pval_thres)+2,2] <- QTL.adult.pi1
+mQTL.pi1_fdr[length(fdr_thres)+2,1] <- 'positive'
+mQTL.pi1_fdr[length(fdr_thres)+2,2] <- QTL.adult.pi1
+cat('pi1 of', length(match.indx),'matched positive control SNPs:', QTL.adult.pi1)
+```
+
+### Brain haQTL enrichment
+
+```{r haQTL, results='asis'}
+brain.QTLs_by_dist <- as.data.frame(fread(paste0(wd,'Brain_haQTLs_by_dist.w_zscores.txt')))
+haQTL.pi1_pval <- pi1_est_pval(brain.QTLs_by_dist, pval_thres)
+haQTL.pi1_fdr <- pi1_est_fdr(brain.QTLs_by_dist, fdr_thres)
+```
+
+#### Negative control using random SNPs in OCRs
+
+```{r haQTL-neg}
+QTLs_in_OCR.df <- as.data.frame(fread(paste0(wd,'QTL_in_OCR/brain_haQTL_hg38_in_CN_peaks.bed')))
+names(QTLs_in_OCR.df) <- c('chr','start','end','rsID')
+QTLs_in_OCR.pval <- brain.QTLs_by_dist$pval[match(QTLs_in_OCR.df$rsID, brain.QTLs_by_dist$SNPid)]
+QTL.random.pi1 <- get_pi1(QTLs_in_OCR.pval,0.5)
+
+haQTL.pi1_pval[length(pval_thres)+1,1] <- 'random'
+haQTL.pi1_pval[length(pval_thres)+1,2] <- QTL.random.pi1
+haQTL.pi1_fdr[length(fdr_thres)+1,1] <- 'random'
+haQTL.pi1_fdr[length(fdr_thres)+1,2] <- QTL.random.pi1
+cat('pi1 of random control:', QTL.random.pi1)
+```
+
+#### Positive control using ASoC variants in adult brain OCRs
+```{r haQTL-pos}
+match.indx <- match(ASoC.adult_OCR.signif$rsID,brain.QTLs_by_dist$SNPid)
+match.indx <- na.omit(match.indx)
+QTL.adult.pi1 <- get_pi1(brain.QTLs_by_dist$pval[match.indx],0.5) # 
+
+haQTL.pi1_pval[length(pval_thres)+2,1] <- 'positive'
+haQTL.pi1_pval[length(pval_thres)+2,2] <- QTL.adult.pi1
+haQTL.pi1_fdr[length(fdr_thres)+2,1] <- 'positive'
+haQTL.pi1_fdr[length(fdr_thres)+2,2] <- QTL.adult.pi1
+cat('pi1 of', length(match.indx),'matched positive control SNPs:', QTL.adult.pi1)
+```
+
+## Summary of $\pi 1$ enrichment results
+
+### Varing ASoC p value threshold
+```{r combined pval}
+pi1_pval <- rbind(eQTL.pi1_pval,mQTL.pi1_pval,haQTL.pi1_pval)
+names(pi1_pval) <- c('thres','pi1','num_SNPs')
+pi1_pval$type <- rep(c('eQTL','mQTL','haQTL'), each=nrow(eQTL.pi1_pval))
+pi1_pval$thres <- factor(pi1_pval$thres)
+pi1_pval$thres <- relevel(pi1_pval$thres,'random')
+ggplot(pi1_pval, aes(x=factor(type), y=pi1, fill = thres)) + 
+  geom_bar(stat="identity", position = 'dodge') + theme_minimal() + # ylim(low=0,high=0.6) +
+  theme(axis.title.x = element_blank(), legend.position="bottom") + 
+  labs(fill = "-log10(p value) cut-off") + ylim(0,0.5)
+```
+
+### Varing ASoC FDR threshold
+```{r combined fdr}
+pi1_fdr <- rbind(eQTL.pi1_fdr,mQTL.pi1_fdr,haQTL.pi1_fdr)
+names(pi1_fdr) <- c('thres','pi1','num_SNPs')
+pi1_fdr$type <- rep(c('eQTL','mQTL','haQTL'), each=nrow(eQTL.pi1_fdr))
+pi1_fdr$thres <- factor(pi1_fdr$thres, levels = c('random','0.25','0.1','0.05','0.01','positive'))
+ggplot(pi1_fdr, aes(x=factor(type), y=pi1, fill = thres)) + 
+  geom_bar(stat="identity", position = 'dodge') + theme_minimal() + # ylim(low=0,high=0.6) +
+  theme(axis.title.x = element_blank(), legend.position="bottom") + 
+  labs(fill = "FDR cut-off") + ylim(0,0.5)
+```
+
+## TORUS enrichment analysis
+
+```{r}
+torus.df <- read.delim(paste0(wd,'torus_result_table.txt'), header = T,row.names = 1)
+kable(torus.df) %>% kable_styling(position = 'center',full_width = T)
+```
+We use TORUS to estimate the enrichment of Glut ASoC variants for xQTL SNPs. The table presents the log2-odds ratios and their 95% confidence intervals.
+
+Unlike the previous $\pi 1$ analyses, we keep all of the QTL statistics per SNP. 
+
+For negative control, we use ATAC-seq peak region obtained from 20 Glut cell lines as annotation.
+
+For positive control, we use ASoC variants (FDR < 0.05) that fall into the adult brain OCRs (PsychENCODE) as annotation. Since the number of ASoC variants that overlap with xQTL is small, the confidence intervals are very wide. 
