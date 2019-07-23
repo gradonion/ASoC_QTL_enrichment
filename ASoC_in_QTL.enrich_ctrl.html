@@ -1051,7 +1051,7 @@ kable(torus.df) %&gt;% kable_styling(position = &#39;center&#39;,full_width = T)
 type
 </th>
 <th style="text-align:right;">
-log2.odds_ratio
+log.odds_ratio
 </th>
 <th style="text-align:right;">
 low.CI
@@ -1190,11 +1190,11 @@ pos_haQTL
 </tr>
 </tbody>
 </table>
-<p>We use TORUS to estimate the enrichment of Glut ASoC variants for xQTL SNPs. The table presents the log2-odds ratios and their 95% confidence intervals.</p>
+<p>We use TORUS to estimate the enrichment of Glut ASoC variants for xQTL SNPs. The table presents the log-odds ratios and their 95% confidence intervals.</p>
 <p>Unlike the previous <span class="math inline">\(\pi 1\)</span> analyses, we keep all of the QTL statistics per SNP.</p>
 <p>For negative control, we use ATAC-seq peak regions obtained from 20 Glut cell lines as annotation.</p>
 <p>For positive control, we use ASoC variants (FDR &lt; 0.05) that fall into the adult brain OCRs (PsychENCODE) as annotation. Since the number of ASoC variants that overlap with xQTL is small, the confidence intervals are very wide. The estimations might not be that accurate/meaningful. We ignore them in the plotting.</p>
-<pre class="r"><code>ggplot() + geom_pointrange(torus.df[1:6,], mapping = aes(x=type, y=log2.odds_ratio, 
+<pre class="r"><code>ggplot() + geom_pointrange(torus.df[1:6,], mapping = aes(x=type, y=log.odds_ratio, 
                            ymin=low.CI, ymax=high.CI))</code></pre>
 <p><img src="Figs/torus.res-1.png" width="768" style="display: block; margin: auto;" /></p>
 </div>
