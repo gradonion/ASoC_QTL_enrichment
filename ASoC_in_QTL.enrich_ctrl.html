@@ -1042,15 +1042,16 @@ ggplot(pi1_fdr, aes(x=factor(type), y=pi1, fill = thres)) +
 </div>
 <div id="torus-enrichment-analysis" class="section level2">
 <h2>TORUS enrichment analysis</h2>
-<pre class="r"><code>torus.df &lt;- read.delim(paste0(wd,&#39;torus_result_table.txt&#39;), header = T,row.names = 1)
+<pre class="r"><code>torus.df &lt;- read.delim(paste0(wd,&#39;torus_result_table.txt&#39;), header = T)
 kable(torus.df) %&gt;% kable_styling(position = &#39;center&#39;,full_width = T)</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
 <th style="text-align:left;">
+type
 </th>
 <th style="text-align:right;">
-log.oddsRatio.
+log2.odds_ratio
 </th>
 <th style="text-align:right;">
 low.CI
@@ -1063,7 +1064,7 @@ high.CI
 <tbody>
 <tr>
 <td style="text-align:left;">
-eQTL_all
+eQTL
 </td>
 <td style="text-align:right;">
 3.474
@@ -1077,7 +1078,7 @@ eQTL_all
 </tr>
 <tr>
 <td style="text-align:left;">
-mQTL_all
+mQTL
 </td>
 <td style="text-align:right;">
 3.561
@@ -1091,7 +1092,7 @@ mQTL_all
 </tr>
 <tr>
 <td style="text-align:left;">
-haQTL_all
+haQTL
 </td>
 <td style="text-align:right;">
 4.477
@@ -1163,8 +1164,11 @@ pos_mQTL
 </table>
 <p>We use TORUS to estimate the enrichment of Glut ASoC variants for xQTL SNPs. The table presents the log2-odds ratios and their 95% confidence intervals.</p>
 <p>Unlike the previous <span class="math inline">\(\pi 1\)</span> analyses, we keep all of the QTL statistics per SNP.</p>
-<p>For negative control, we use ATAC-seq peak region obtained from 20 Glut cell lines as annotation.</p>
-<p>For positive control, we use ASoC variants (FDR &lt; 0.05) that fall into the adult brain OCRs (PsychENCODE) as annotation. Since the number of ASoC variants that overlap with xQTL is small, the confidence intervals are very wide.</p>
+<p>For negative control, we use ATAC-seq peak regions obtained from 20 Glut cell lines as annotation.</p>
+<p>For positive control, we use ASoC variants (FDR &lt; 0.05) that fall into the adult brain OCRs (PsychENCODE) as annotation. Since the number of ASoC variants that overlap with xQTL is small, the confidence intervals are very wide. The estimations might not be that accurate/meaningful. We ignore them in the plotting.</p>
+<pre class="r"><code>ggplot() + geom_pointrange(torus.df[1:5,], mapping = aes(x=type, y=log2.odds_ratio, 
+                           ymin=low.CI, ymax=high.CI))</code></pre>
+<p><img src="Figs/torus-1.png" width="768" style="display: block; margin: auto;" /></p>
 </div>
 
 
