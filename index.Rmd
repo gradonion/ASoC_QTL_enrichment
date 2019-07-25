@@ -8,8 +8,13 @@ output:
 ---
 
 ## Enrichment of Brain QTLs in ASoc Variants
+
 Please see this [page](ASoC_in_QTL.enrich_ctrl.html).
 
 ## Sign Consistency between ASoC and Brain xQTL Effects
+
 Please see this [page](ASoC_QTL_sign.html).
 
+## Enrichment ASoc Variants in Genomic Elements
+
+Please see this [page](ASoC_genomic_elements.enrich.html) for comparison btw cell-type-specific and shared ASoC variants.

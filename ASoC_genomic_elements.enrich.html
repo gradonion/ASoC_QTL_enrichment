@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Yifan Zhou" />
+
+
+<title>Enrichment of ASoC variants in Genomic Regions</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 60px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h2 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h3 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h4 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h5 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h6 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">ASoC enrichment</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">xQTL enrichment in ASoC</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Enrichment of ASoC variants in Genomic Regions</h1>
+<h4 class="author"><em>Yifan Zhou</em></h4>
+<h4 class="date"><em>7/18/2019</em></h4>
+
+</div>
+
+
+<pre class="r"><code>library(data.table)
+library(dplyr)
+library(ggplot2)
+library(knitr)
+library(kableExtra)
+options(stringsAsFactors = F)</code></pre>
+<p>Baesed on ASoC SNPs identified in each neuronal cell type (NSC,CN,DN and GA), we have the following hypothesis that cell-type-specific ASoC SNPs are highly enriched in enhancers as oppose to ASoC SNPs shared among several cell types.</p>
+<p>To test this hypothesis, we first obtain chromatin state annotation imputed from the Roadmap Epigenomics Project <a href="https://egg2.wustl.edu/roadmap/web_portal/">here</a>. To match our neuronal cell types under early development, we pick a matching tissue type: E081 (Fetal Brain Male). We conduct our analysis using both the 15-state model and the 25-state model.</p>
+<ul>
+<li><p>Under the 15-state model, we define a region to be enhancer if its chromatin state belongs to 6 or 7, and promoter if its chromatin state belongs to 1 or 2.</p></li>
+<li><p>Under the 25-state model, we define a region to be enhancer if its chromatin state falls within 9-19, and promoter if its chromatin state falls within 1-4.</p></li>
+</ul>
+<p>The following table shows the genomic coverage of each state annotated in this way.</p>
+<pre class="r"><code>p.enh &lt;- 97325800/(3.2*10^9) # 0.03
+p.prom &lt;- 22891962/(3.2*10^9) # 0.007
+p.enh.new &lt;- 147566576/(3.2*10^9) # 0.046
+p.prom.new &lt;- 34972125/(3.2*10^9) # 0.011
+coverage &lt;- data.frame(matrix(c(p.prom,p.prom.new,p.enh,p.enh.new),nrow = 2))
+names(coverage) &lt;- c(&#39;promoter coverage&#39;,&#39;enhancer coverage&#39;)
+row.names(coverage) &lt;- c(&#39;15-states annotation&#39;,&#39;25-states annotation&#39;)
+print(kable(coverage,digits = 4) %&gt;% kable_styling(position = &#39;center&#39;))</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+promoter coverage
+</th>
+<th style="text-align:right;">
+enhancer coverage
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+15-states annotation
+</td>
+<td style="text-align:right;">
+0.0072
+</td>
+<td style="text-align:right;">
+0.0304
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+25-states annotation
+</td>
+<td style="text-align:right;">
+0.0109
+</td>
+<td style="text-align:right;">
+0.0461
+</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>binom_enrich &lt;- function(p.enh,p.prom,snp_enh,snp_prom,snp_total){
+  stats &lt;- data.frame(matrix(c(snp_enh/snp_total,p.enh,
+                               snp_prom/snp_total,p.prom),nrow = 2))
+  names(stats) &lt;- c(&#39;enhancer&#39;,&#39;promoter&#39;)
+  fold_enrich &lt;- (log10(stats[1,]/stats[2,]))
+  stats[3,] &lt;- fold_enrich
+  row.names(stats) &lt;- c(&#39;# of SNPs in the element&#39;,&#39;element coverage&#39;,
+                        &#39;log10(fold_enrich)&#39;)
+  print(kable(stats,digits = 4) %&gt;% kable_styling(position = &#39;center&#39;))
+  test1 &lt;- binom.test(snp_enh,snp_total,p.enh, alternative = &#39;greater&#39;)
+  cat(&#39;Binomial test p value (enhancer):&#39;,test1$p.value,&#39;; &#39;)
+  test2 &lt;- binom.test(snp_prom,snp_total,p.prom, alternative = &#39;greater&#39;)
+  cat(&#39;binomial test p value (promoter):&#39;,test2$p.value,&#39;.&#39;)
+  return(fold_enrich)
+}</code></pre>
+<div id="cell-type-specific-variants-same-criterion" class="section level2">
+<h2>Cell-type-specific variants (same criterion)</h2>
+<p>We define cell-type-specific ASoC variants to be those that pass FDR &lt; 0.05 in only one cell type.</p>
+<p>There are 3618 cell-type-specific ASoC variants.</p>
+<div id="under-15-state-genomic-annotation" class="section level3">
+<h3>Under 15-state genomic annotation</h3>
+<p>Out of 3618 cell-type-specific ASoC SNPs, 766 fall into enhancer regions, and 737 fall into promoter regions.</p>
+<pre class="r"><code>fold.spec15 &lt;- binom_enrich(p.enh,p.prom,766,737,3618)</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+enhancer
+</th>
+<th style="text-align:right;">
+promoter
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+# of SNPs in the element
+</td>
+<td style="text-align:right;">
+0.2117
+</td>
+<td style="text-align:right;">
+0.2037
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+element coverage
+</td>
+<td style="text-align:right;">
+0.0304
+</td>
+<td style="text-align:right;">
+0.0072
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+log10(fold_enrich)
+</td>
+<td style="text-align:right;">
+0.8427
+</td>
+<td style="text-align:right;">
+1.4545
+</td>
+</tr>
+</tbody>
+</table>
+<p>Binomial test p value (enhancer): 0 ; binomial test p value (promoter): 0 .</p>
+</div>
+<div id="under-25-state-genomic-annotation" class="section level3">
+<h3>Under 25-state genomic annotation</h3>
+<p>Out of 3618 cell-type-specific ASoC SNPs, 1040 fall into enhancer regions, and 1312 fall into promoter regions.</p>
+<pre class="r"><code>fold.spec25 &lt;- binom_enrich(p.enh.new,p.prom.new,1040,1312,3618)</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+enhancer
+</th>
+<th style="text-align:right;">
+promoter
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+# of SNPs in the element
+</td>
+<td style="text-align:right;">
+0.2875
+</td>
+<td style="text-align:right;">
+0.3626
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+element coverage
+</td>
+<td style="text-align:right;">
+0.0461
+</td>
+<td style="text-align:right;">
+0.0109
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+log10(fold_enrich)
+</td>
+<td style="text-align:right;">
+0.7947
+</td>
+<td style="text-align:right;">
+1.5209
+</td>
+</tr>
+</tbody>
+</table>
+<p>Binomial test p value (enhancer): 0 ; binomial test p value (promoter): 0 .</p>
+</div>
+</div>
+<div id="cell-type-specific-variants-different-criteria" class="section level2">
+<h2>Cell-type-specific variants (different criteria)</h2>
+<p>We define cell-type-specific ASoC variants to be those that pass FDR &lt; 0.05 in one cell type, while having p value &gt; 0.05 in all other cell types.</p>
+<p>There are 2237 cell-type-specific ASoC variants.</p>
+<div id="under-15-state-genomic-annotation-1" class="section level3">
+<h3>Under 15-state genomic annotation</h3>
+<p>Out of 2237 cell-type-specific ASoC SNPs, 455 fall into enhancer regions, and 415 fall into promoter regions.</p>
+<pre class="r"><code>fold.spec_new15 &lt;- binom_enrich(p.enh,p.prom,455,415,2237)</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+enhancer
+</th>
+<th style="text-align:right;">
+promoter
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+# of SNPs in the element
+</td>
+<td style="text-align:right;">
+0.2034
+</td>
+<td style="text-align:right;">
+0.1855
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+element coverage
+</td>
+<td style="text-align:right;">
+0.0304
+</td>
+<td style="text-align:right;">
+0.0072
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+log10(fold_enrich)
+</td>
+<td style="text-align:right;">
+0.8253
+</td>
+<td style="text-align:right;">
+1.4138
+</td>
+</tr>
+</tbody>
+</table>
+<p>Binomial test p value (enhancer): 9.229207e-226 ; binomial test p value (promoter): 0 .</p>
+</div>
+<div id="under-25-state-genomic-annotation-1" class="section level3">
+<h3>Under 25-state genomic annotation</h3>
+<p>Out of 2237 cell-type-specific ASoC SNPs, 646 fall into enhancer regions, and 749 fall into promoter regions.</p>
+<pre class="r"><code>fold.spec_new25 &lt;- binom_enrich(p.enh.new,p.prom.new,646,749,2237)</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+enhancer
+</th>
+<th style="text-align:right;">
+promoter
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+# of SNPs in the element
+</td>
+<td style="text-align:right;">
+0.2888
+</td>
+<td style="text-align:right;">
+0.3348
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+element coverage
+</td>
+<td style="text-align:right;">
+0.0461
+</td>
+<td style="text-align:right;">
+0.0109
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+log10(fold_enrich)
+</td>
+<td style="text-align:right;">
+0.7967
+</td>
+<td style="text-align:right;">
+1.4862
+</td>
+</tr>
+</tbody>
+</table>
+<p>Binomial test p value (enhancer): 3.005193e-314 ; binomial test p value (promoter): 0 .</p>
+</div>
+</div>
+<div id="shared-asoc-variants" class="section level2">
+<h2>Shared ASoC variants</h2>
+<p>We define these shared ASoC variants to be those that pass FDR &lt; 0.05 in at least 3 cell types out of 4. There are 256 ASoC variants that satisfy this criterion.</p>
+<div id="under-15-state-genomic-annotation-2" class="section level3">
+<h3>Under 15-state genomic annotation</h3>
+<p>Out of 256 shared ASoC SNPs, 43 fall into enhancer regions, and 101 fall into promoter regions.</p>
+<pre class="r"><code>fold.shared15 &lt;- binom_enrich(p.enh,p.prom,43,101,256)</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+enhancer
+</th>
+<th style="text-align:right;">
+promoter
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+# of SNPs in the element
+</td>
+<td style="text-align:right;">
+0.1680
+</td>
+<td style="text-align:right;">
+0.3945
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+element coverage
+</td>
+<td style="text-align:right;">
+0.0304
+</td>
+<td style="text-align:right;">
+0.0072
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+log10(fold_enrich)
+</td>
+<td style="text-align:right;">
+0.7422
+</td>
+<td style="text-align:right;">
+1.7415
+</td>
+</tr>
+</tbody>
+</table>
+<p>Binomial test p value (enhancer): 1.36472e-19 ; binomial test p value (promoter): 1.282745e-144 .</p>
+</div>
+<div id="under-25-state-genomic-annotation-2" class="section level3">
+<h3>Under 25-state genomic annotation</h3>
+<p>Out of 256 shared ASoC SNPs, 43 fall into enhancer regions, and 158 fall into promoter regions.</p>
+<pre class="r"><code>fold.shared25 &lt;- binom_enrich(p.enh.new,p.prom.new,43,158,256)</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+enhancer
+</th>
+<th style="text-align:right;">
+promoter
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+# of SNPs in the element
+</td>
+<td style="text-align:right;">
+0.1680
+</td>
+<td style="text-align:right;">
+0.6172
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+element coverage
+</td>
+<td style="text-align:right;">
+0.0461
+</td>
+<td style="text-align:right;">
+0.0109
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+log10(fold_enrich)
+</td>
+<td style="text-align:right;">
+0.5614
+</td>
+<td style="text-align:right;">
+1.7518
+</td>
+</tr>
+</tbody>
+</table>
+<p>Binomial test p value (enhancer): 2.761435e-13 ; binomial test p value (promoter): 2.092854e-238 .</p>
+</div>
+</div>
+<div id="summary-of-enrichment-results" class="section level2">
+<h2>Summary of enrichment results</h2>
+<pre class="r"><code>fold.df1 &lt;- rbind(fold.shared15,fold.spec_new15,fold.spec15)
+fold.df2 &lt;- rbind(fold.shared25,fold.spec_new25,fold.spec25)
+fold.ggplot &lt;- data.frame(snp.type = 
+                          rep(c(&#39;shared&#39;,&#39;specific_2&#39;,&#39;specific_1&#39;),time = 4))
+fold.ggplot$fold &lt;- c(fold.df1$enhancer,fold.df1$promoter,
+                      fold.df2$enhancer,fold.df2$promoter)
+fold.ggplot$annotation &lt;- factor(rep(c(&#39;enhancer&#39;,&#39;promoter&#39;,
+                                &#39;enhancer&#39;,&#39;promoter&#39;),each = 3))
+fold.ggplot$model &lt;- factor(rep(c(&#39;15-state&#39;,&#39;25-state&#39;),each = 6))
+fold.ggplot$snp.type &lt;- factor(fold.ggplot$snp.type,
+                               levels = c(&#39;shared&#39;,&#39;specific_2&#39;,&#39;specific_1&#39;))
+ggplot(data = fold.ggplot, aes(x=snp.type,y=fold, color=model, shape=annotation)) +
+  geom_point(size = 4) + labs(x = &#39;ASoC SNP type&#39;,y = &#39;log10(fold of enrichment)&#39;) +
+  theme(axis.text=element_text(size=12),axis.title=element_text(size=14,face=&quot;bold&quot;))</code></pre>
+<p><img src="Figs/unnamed-chunk-28-1.png" width="576" style="display: block; margin: auto;" /></p>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
