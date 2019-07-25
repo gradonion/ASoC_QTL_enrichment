@@ -423,14 +423,16 @@ library(ggplot2)
 library(knitr)
 library(kableExtra)
 options(stringsAsFactors = F)
-ASoC &lt;- read.delim(&#39;~/Downloads/ASoC/data/ASoC_20lines_Glut_list.txt&#39;)
-ASoC.signif &lt;- filter(ASoC,FDR &lt; 0.05)</code></pre>
+ASoC.signif &lt;- read.delim(&#39;~/Downloads/ASoC/data/ASoC_Glut20_signif_w_minor.txt&#39;)
+ASoC.signif &lt;- na.omit(ASoC.signif)
+ASoC.signif$sign &lt;- ASoC.signif$alt_minor * 2 - 1</code></pre>
 <pre class="r"><code>sign.analysis &lt;- function(qtl.name){
   qtl.signif &lt;- as.data.frame(fread(paste0(&#39;~/Downloads/ASoC/QTL_enrich/Brain_&#39;,
                                            qtl.name,&#39;s_Bonferroni.txt&#39;)))
   tmp &lt;- match(ASoC.signif$rsID,qtl.signif$SNPid)
   ASoC.signif.indx &lt;- na.omit(tmp)
-  asoc.fold &lt;- log10(ASoC.signif$ALT[!is.na(tmp)] / ASoC.signif$REF[!is.na(tmp)])
+  ASoC.signif.matched &lt;- ASoC.signif[!is.na(tmp),]
+  asoc.fold &lt;- log10(ASoC.signif.matched$ALT/ASoC.signif.matched$REF) * ASoC.signif.matched$sign
   qtl.spearman &lt;- qtl.signif$SpearmanRho[ASoC.signif.indx]
   asoc.fold.sign &lt;- asoc.fold&gt;0
   qtl.spearman.sign &lt;- qtl.spearman&gt;0
@@ -440,28 +442,28 @@ ASoC.signif &lt;- filter(ASoC,FDR &lt; 0.05)</code></pre>
   cat(&#39;Number of concordant pairs:&#39;, num_same)
   cat(&#39;\n&#39;)
   cat(&#39;Number of discordant pairs:&#39;, num_diff)
-  qplot(asoc.fold, qtl.spearman, xlab = &#39;ASoC log10(Alt/Ref)&#39;, 
+  qplot(asoc.fold, qtl.spearman, xlab = &#39;ASoC log10(minor/major)&#39;, 
         ylab = paste(qtl.name,&#39;Spearman Rho&#39;))
 }</code></pre>
 <div id="asoc-and-eqtl" class="section level2">
 <h2>ASoC and eQTL</h2>
 <pre class="r"><code>sign.analysis(&#39;eQTL&#39;)</code></pre>
-<pre><code>Number of concordant pairs: 268
-Number of discordant pairs: 258</code></pre>
+<pre><code>Number of concordant pairs: 234
+Number of discordant pairs: 275</code></pre>
 <p><img src="Figs/unnamed-chunk-3-1.png" width="384" style="display: block; margin: auto;" /></p>
 </div>
 <div id="asoc-and-mqtl" class="section level2">
 <h2>ASoC and mQTL</h2>
 <pre class="r"><code>sign.analysis(&#39;mQTL&#39;)</code></pre>
-<pre><code>Number of concordant pairs: 723
-Number of discordant pairs: 653</code></pre>
+<pre><code>Number of concordant pairs: 749
+Number of discordant pairs: 588</code></pre>
 <p><img src="Figs/unnamed-chunk-4-1.png" width="384" style="display: block; margin: auto;" /></p>
 </div>
 <div id="asoc-and-haqtl" class="section level2">
 <h2>ASoC and haQTL</h2>
 <pre class="r"><code>sign.analysis(&#39;haQTL&#39;)</code></pre>
-<pre><code>Number of concordant pairs: 127
-Number of discordant pairs: 188</code></pre>
+<pre><code>Number of concordant pairs: 131
+Number of discordant pairs: 169</code></pre>
 <p><img src="Figs/unnamed-chunk-5-1.png" width="384" style="display: block; margin: auto;" /></p>
 </div>
 

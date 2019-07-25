@@ -23,8 +23,9 @@ library(ggplot2)
 library(knitr)
 library(kableExtra)
 options(stringsAsFactors = F)
-ASoC <- read.delim('~/Downloads/ASoC/data/ASoC_20lines_Glut_list.txt')
-ASoC.signif <- filter(ASoC,FDR < 0.05)
+ASoC.signif <- read.delim('~/Downloads/ASoC/data/ASoC_Glut20_signif_w_minor.txt')
+ASoC.signif <- na.omit(ASoC.signif)
+ASoC.signif$sign <- ASoC.signif$alt_minor * 2 - 1
 ```
 
 ```{r}
@@ -33,7 +34,8 @@ sign.analysis <- function(qtl.name){
                                            qtl.name,'s_Bonferroni.txt')))
   tmp <- match(ASoC.signif$rsID,qtl.signif$SNPid)
   ASoC.signif.indx <- na.omit(tmp)
-  asoc.fold <- log10(ASoC.signif$ALT[!is.na(tmp)] / ASoC.signif$REF[!is.na(tmp)])
+  ASoC.signif.matched <- ASoC.signif[!is.na(tmp),]
+  asoc.fold <- log10(ASoC.signif.matched$ALT/ASoC.signif.matched$REF) * ASoC.signif.matched$sign
   qtl.spearman <- qtl.signif$SpearmanRho[ASoC.signif.indx]
   asoc.fold.sign <- asoc.fold>0
   qtl.spearman.sign <- qtl.spearman>0
@@ -43,7 +45,7 @@ sign.analysis <- function(qtl.name){
   cat('Number of concordant pairs:', num_same)
   cat('\n')
   cat('Number of discordant pairs:', num_diff)
-  qplot(asoc.fold, qtl.spearman, xlab = 'ASoC log10(Alt/Ref)', 
+  qplot(asoc.fold, qtl.spearman, xlab = 'ASoC log10(minor/major)', 
         ylab = paste(qtl.name,'Spearman Rho'))
 }
 ```
