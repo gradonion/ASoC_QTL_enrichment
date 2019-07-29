@@ -426,8 +426,8 @@ library(knitr)
 library(kableExtra)
 options(stringsAsFactors = F)
 ASoC &lt;- read.delim(&#39;~/Downloads/ASoC/data/ASoC_20lines_Glut_list.txt&#39;)
-pval_thres &lt;- c(6:2)
-fdr_thres &lt;- c(0.01,0.05,0.1,0.25)</code></pre>
+pval_thres &lt;- c(5:2)
+fdr_thres &lt;- c(0.05,0.1,0.25)</code></pre>
 <p>We analyze the enrichment of brain xQTLs by ASoC variants by estimating <span class="math inline">\(\pi 1\)</span> of their matching p values under the xQTL test. For comparison, we generate multiple sets of ASoC variants by varying the ASoC p value/FDR threhold and estimate their <span class="math inline">\(\pi 1\)</span> levels.</p>
 <pre class="r"><code># get pi1 alternative estimation
 get_pi1 &lt;- function(pval,thres){
@@ -507,17 +507,6 @@ pi1 estimation
 <tbody>
 <tr>
 <td style="text-align:right;">
-6
-</td>
-<td style="text-align:right;">
-0.4051
-</td>
-<td style="text-align:right;">
-1012
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
 5
 </td>
 <td style="text-align:right;">
@@ -583,17 +572,6 @@ pi1 estimation
 <tbody>
 <tr>
 <td style="text-align:right;">
-0.01
-</td>
-<td style="text-align:right;">
-0.3810
-</td>
-<td style="text-align:right;">
-2575
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
 0.05
 </td>
 <td style="text-align:right;">
@@ -653,8 +631,8 @@ cat(&#39;pi1 of random control:&#39;, QTL.random.pi1)</code></pre>
 <pre class="r"><code>ASoC.adult_OCR &lt;- as.data.frame(fread(paste0(wd,&#39;QTL_in_OCR/ASoC_Glut20_in_adult_OCR.bed&#39;)))
 names(ASoC.adult_OCR) &lt;- c(&#39;chr&#39;,&#39;start&#39;,&#39;end&#39;,&#39;rsID&#39;,&#39;FDR&#39;)
 ASoC.adult_OCR.signif &lt;- filter(ASoC.adult_OCR, FDR&lt;0.05)
-cat(&#39;Out of 5611 ASoC variants,&#39;,nrow(ASoC.adult_OCR.signif),&#39;fall in adult brain OCRs.&#39;)</code></pre>
-<pre><code>Out of 5611 ASoC variants, 1665 fall in adult brain OCRs.</code></pre>
+cat(&#39;Out of 5611 ASoC variants (FDR&lt;0.05),&#39;,nrow(ASoC.adult_OCR.signif),&#39;fall in adult brain OCRs.&#39;)</code></pre>
+<pre><code>Out of 5611 ASoC variants (FDR&lt;0.05), 1665 fall in adult brain OCRs.</code></pre>
 <pre class="r"><code>match.indx &lt;- match(ASoC.adult_OCR.signif$rsID,brain.QTLs_by_dist$SNPid)
 match.indx &lt;- na.omit(match.indx)
 QTL.adult.pi1 &lt;- get_pi1(brain.QTLs_by_dist$pval[match.indx],0.5) # 0.4551551
@@ -689,17 +667,6 @@ pi1 estimation
 </tr>
 </thead>
 <tbody>
-<tr>
-<td style="text-align:right;">
-6
-</td>
-<td style="text-align:right;">
-0.4727
-</td>
-<td style="text-align:right;">
-1009
-</td>
-</tr>
 <tr>
 <td style="text-align:right;">
 5
@@ -765,17 +732,6 @@ pi1 estimation
 </tr>
 </thead>
 <tbody>
-<tr>
-<td style="text-align:right;">
-0.01
-</td>
-<td style="text-align:right;">
-0.4565
-</td>
-<td style="text-align:right;">
-2565
-</td>
-</tr>
 <tr>
 <td style="text-align:right;">
 0.05
@@ -863,17 +819,6 @@ pi1 estimation
 <tbody>
 <tr>
 <td style="text-align:right;">
-6
-</td>
-<td style="text-align:right;">
-0.3824
-</td>
-<td style="text-align:right;">
-1033
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
 5
 </td>
 <td style="text-align:right;">
@@ -937,17 +882,6 @@ pi1 estimation
 </tr>
 </thead>
 <tbody>
-<tr>
-<td style="text-align:right;">
-0.01
-</td>
-<td style="text-align:right;">
-0.3625
-</td>
-<td style="text-align:right;">
-2629
-</td>
-</tr>
 <tr>
 <td style="text-align:right;">
 0.05
@@ -1194,8 +1128,20 @@ pos_haQTL
 <p>Unlike the previous <span class="math inline">\(\pi 1\)</span> analyses, we keep all of the QTL statistics per SNP.</p>
 <p>For negative control, we use ATAC-seq peak regions obtained from 20 Glut cell lines as annotation.</p>
 <p>For positive control, we use ASoC variants (FDR &lt; 0.05) that fall into the adult brain OCRs (PsychENCODE) as annotation. Since the number of ASoC variants that overlap with xQTL is small, the confidence intervals are very wide. The estimations might not be that accurate/meaningful. We ignore them in the plotting.</p>
-<pre class="r"><code>ggplot() + geom_pointrange(torus.df[1:6,], mapping = aes(x=type, y=log.odds_ratio, 
-                           ymin=low.CI, ymax=high.CI))</code></pre>
+<pre class="r"><code>torus.plot.df &lt;- torus.df[1:6,]
+torus.plot.df[,c(2:4)] &lt;- log2(exp(1)^torus.plot.df[,c(2:4)])
+names(torus.plot.df)[2] &lt;- &#39;log2.odds_ratio&#39;
+torus.plot.df$QTL_type = rep(c(&#39;eQTL&#39;,&#39;mQTL&#39;,&#39;haQTL&#39;),times = 2)
+torus.plot.df &lt;- torus.plot.df[c(1,4,2,5,3,6),]
+torus.plot.df$type &lt;- c(&#39;eQTL_ASoC&#39;,&#39;eQTL_OCR&#39;,&#39;haQTL_ASoC&#39;,&#39;haQTL_OCR&#39;,&#39;mQTL_ASoC&#39;,&#39;mQTL_OCR&#39;)
+torus.plot.df$type &lt;- factor(torus.plot.df$type,
+                             levels = c(&#39;eQTL_ASoC&#39;,&#39;eQTL_OCR&#39;,&#39;haQTL_ASoC&#39;,&#39;haQTL_OCR&#39;,&#39;mQTL_ASoC&#39;,&#39;mQTL_OCR&#39;))
+ggplot() + geom_pointrange(torus.plot.df, mapping = aes(x=type, y=log2.odds_ratio, 
+                           ymin=low.CI, ymax=high.CI, col=factor(QTL_type)), 
+                           size = 1.5, fatten = 2) +
+  ylim(0,8) + theme_minimal() + labs(y = &#39;log2 (fold of enrichment)&#39;, col = &#39;QTL type&#39;) +
+  theme(axis.text=element_text(size=12), axis.title=element_text(size=14,face=&quot;bold&quot;)) +
+  coord_flip()</code></pre>
 <p><img src="Figs/torus.res-1.png" width="768" style="display: block; margin: auto;" /></p>
 </div>
 

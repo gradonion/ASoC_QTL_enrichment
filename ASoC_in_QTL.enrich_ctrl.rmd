@@ -27,8 +27,8 @@ library(knitr)
 library(kableExtra)
 options(stringsAsFactors = F)
 ASoC <- read.delim('~/Downloads/ASoC/data/ASoC_20lines_Glut_list.txt')
-pval_thres <- c(6:2)
-fdr_thres <- c(0.01,0.05,0.1,0.25)
+pval_thres <- c(5:2)
+fdr_thres <- c(0.05,0.1,0.25)
 ```
 
 We analyze the enrichment of brain xQTLs by ASoC variants by estimating $\pi 1$ of their matching p values under the xQTL test. For comparison, we generate multiple sets of ASoC variants by varying the ASoC p value/FDR threhold and estimate their $\pi 1$ levels.
@@ -125,7 +125,7 @@ For positive control, we look at the QTL p value distribution of ASoC variants (
 ASoC.adult_OCR <- as.data.frame(fread(paste0(wd,'QTL_in_OCR/ASoC_Glut20_in_adult_OCR.bed')))
 names(ASoC.adult_OCR) <- c('chr','start','end','rsID','FDR')
 ASoC.adult_OCR.signif <- filter(ASoC.adult_OCR, FDR<0.05)
-cat('Out of 5611 ASoC variants,',nrow(ASoC.adult_OCR.signif),'fall in adult brain OCRs.')
+cat('Out of 5611 ASoC variants (FDR<0.05),',nrow(ASoC.adult_OCR.signif),'fall in adult brain OCRs.')
 ```
 
 ```{r eQTL-pos}
@@ -254,6 +254,18 @@ For negative control, we use ATAC-seq peak regions obtained from 20 Glut cell li
 For positive control, we use ASoC variants (FDR < 0.05) that fall into the adult brain OCRs (PsychENCODE) as annotation. Since the number of ASoC variants that overlap with xQTL is small, the confidence intervals are very wide. The estimations might not be that accurate/meaningful. We ignore them in the plotting.
 
 ```{r torus.res}
-ggplot() + geom_pointrange(torus.df[1:6,], mapping = aes(x=type, y=log.odds_ratio, 
-                           ymin=low.CI, ymax=high.CI))
+torus.plot.df <- torus.df[1:6,]
+torus.plot.df[,c(2:4)] <- log2(exp(1)^torus.plot.df[,c(2:4)])
+names(torus.plot.df)[2] <- 'log2.odds_ratio'
+torus.plot.df$QTL_type = rep(c('eQTL','mQTL','haQTL'),times = 2)
+torus.plot.df <- torus.plot.df[c(1,4,2,5,3,6),]
+torus.plot.df$type <- c('eQTL_ASoC','eQTL_OCR','haQTL_ASoC','haQTL_OCR','mQTL_ASoC','mQTL_OCR')
+torus.plot.df$type <- factor(torus.plot.df$type,
+                             levels = c('eQTL_ASoC','eQTL_OCR','haQTL_ASoC','haQTL_OCR','mQTL_ASoC','mQTL_OCR'))
+ggplot() + geom_pointrange(torus.plot.df, mapping = aes(x=type, y=log2.odds_ratio, 
+                           ymin=low.CI, ymax=high.CI, col=factor(QTL_type)), 
+                           size = 1.5, fatten = 2) +
+  ylim(0,8) + theme_minimal() + labs(y = 'log2 (fold of enrichment)', col = 'QTL type') +
+  theme(axis.text=element_text(size=12), axis.title=element_text(size=14,face="bold")) +
+  coord_flip()
 ```

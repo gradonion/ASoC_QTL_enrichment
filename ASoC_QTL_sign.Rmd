@@ -26,6 +26,11 @@ options(stringsAsFactors = F)
 ASoC.signif <- read.delim('~/Downloads/ASoC/data/ASoC_Glut20_signif_w_minor.txt')
 ASoC.signif <- na.omit(ASoC.signif)
 ASoC.signif$sign <- ASoC.signif$alt_minor * 2 - 1
+## Limit SNPs to be only those in adult OCR:
+# ASoC.adult_OCR <- as.data.frame(fread('~/Downloads/ASoC/QTL_enrich/QTL_in_OCR/ASoC_Glut20_in_adult_OCR.bed'))
+# names(ASoC.adult_OCR) <- c('chr','start','end','rsID','FDR')
+# match.tmp <- match(ASoC.signif$rsID,ASoC.adult_OCR$rsID)
+# ASoC.signif <- ASoC.signif[!is.na(match.tmp),]
 ```
 
 ```{r}

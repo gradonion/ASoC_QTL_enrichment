@@ -425,7 +425,12 @@ library(kableExtra)
 options(stringsAsFactors = F)
 ASoC.signif &lt;- read.delim(&#39;~/Downloads/ASoC/data/ASoC_Glut20_signif_w_minor.txt&#39;)
 ASoC.signif &lt;- na.omit(ASoC.signif)
-ASoC.signif$sign &lt;- ASoC.signif$alt_minor * 2 - 1</code></pre>
+ASoC.signif$sign &lt;- ASoC.signif$alt_minor * 2 - 1
+## Limit SNPs to be only those in adult OCR:
+# ASoC.adult_OCR &lt;- as.data.frame(fread(&#39;~/Downloads/ASoC/QTL_enrich/QTL_in_OCR/ASoC_Glut20_in_adult_OCR.bed&#39;))
+# names(ASoC.adult_OCR) &lt;- c(&#39;chr&#39;,&#39;start&#39;,&#39;end&#39;,&#39;rsID&#39;,&#39;FDR&#39;)
+# match.tmp &lt;- match(ASoC.signif$rsID,ASoC.adult_OCR$rsID)
+# ASoC.signif &lt;- ASoC.signif[!is.na(match.tmp),]</code></pre>
 <pre class="r"><code>sign.analysis &lt;- function(qtl.name){
   qtl.signif &lt;- as.data.frame(fread(paste0(&#39;~/Downloads/ASoC/QTL_enrich/Brain_&#39;,
                                            qtl.name,&#39;s_Bonferroni.txt&#39;)))
