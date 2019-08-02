@@ -145,3 +145,15 @@ ggplot(data = fold.ggplot, aes(x=snp.type,y=fold, color=model, shape=annotation)
   theme(axis.text=element_text(size=12),axis.title=element_text(size=14,face="bold"))
 ```
 
+Formal plot for the paper:
+```{r}
+fold.25 <- fold.ggplot[c(7,8,10,11),]
+fold.25$snp.type <- as.character(fold.25$snp.type)
+fold.25$snp.type[c(2,4)] <- 'specific'
+fold.25$snp.type <- factor(fold.25$snp.type)
+ggplot(data = fold.25, aes(x=snp.type, y=fold, color=annotation, shape=annotation)) +
+  geom_point(size = 4) + theme_bw() +
+  labs(x = 'ASoC SNP type',y = expression('log'[10]*' (fold of enrichment)')) +
+  theme(axis.text=element_text(size=12),axis.title=element_text(size=14),
+        legend.text = element_text(size = 11), legend.title = element_text(size = 12,face = 'bold'))
+```

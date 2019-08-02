@@ -222,9 +222,13 @@ pi1_pval$type <- rep(c('eQTL','mQTL','haQTL'), each=nrow(eQTL.pi1_pval))
 pi1_pval$thres <- factor(pi1_pval$thres)
 pi1_pval$thres <- relevel(pi1_pval$thres,'random')
 ggplot(pi1_pval, aes(x=factor(type), y=pi1, fill = thres)) + 
-  geom_bar(stat="identity", position = 'dodge') + theme_minimal() + # ylim(low=0,high=0.6) +
+  geom_bar(stat="identity", position = 'dodge') + theme_minimal() + 
   theme(axis.title.x = element_blank(), legend.position="bottom") + 
-  labs(fill = "-log10(p value) cut-off") + ylim(0,0.5)
+  labs(y = expression(pi*'1'), fill = expression(-log[10]*'(p-value) cutoff')) + ylim(0,0.5) + 
+  scale_fill_discrete(labels=c('random','2','3','4','5','positive (2.6)')) +
+  theme(axis.text = element_text(size=12), axis.title.x = element_blank(), 
+        axis.title = element_text(size=14,face="bold"), 
+        legend.text = element_text(size = 11), legend.title = element_text(size = 12,face = 'bold'))
 ```
 
 ### Varing ASoC FDR threshold
@@ -253,19 +257,30 @@ For negative control, we use ATAC-seq peak regions obtained from 20 Glut cell li
 
 For positive control, we use ASoC variants (FDR < 0.05) that fall into the adult brain OCRs (PsychENCODE) as annotation. Since the number of ASoC variants that overlap with xQTL is small, the confidence intervals are very wide. The estimations might not be that accurate/meaningful. We ignore them in the plotting.
 
-```{r torus.res}
+```{r}
 torus.plot.df <- torus.df[1:6,]
 torus.plot.df[,c(2:4)] <- log2(exp(1)^torus.plot.df[,c(2:4)])
 names(torus.plot.df)[2] <- 'log2.odds_ratio'
 torus.plot.df$QTL_type = rep(c('eQTL','mQTL','haQTL'),times = 2)
 torus.plot.df <- torus.plot.df[c(1,4,2,5,3,6),]
 torus.plot.df$type <- c('eQTL_ASoC','eQTL_OCR','haQTL_ASoC','haQTL_OCR','mQTL_ASoC','mQTL_OCR')
-torus.plot.df$type <- factor(torus.plot.df$type,
-                             levels = c('eQTL_ASoC','eQTL_OCR','haQTL_ASoC','haQTL_OCR','mQTL_ASoC','mQTL_OCR'))
-ggplot() + geom_pointrange(torus.plot.df, mapping = aes(x=type, y=log2.odds_ratio, 
-                           ymin=low.CI, ymax=high.CI, col=factor(QTL_type)), 
-                           size = 1.5, fatten = 2) +
-  ylim(0,8) + theme_minimal() + labs(y = 'log2 (fold of enrichment)', col = 'QTL type') +
-  theme(axis.text=element_text(size=12), axis.title=element_text(size=14,face="bold")) +
-  coord_flip()
+torus.plot.df$annotation_type <- rep(c('ASoC','OCR'),times = 3)
 ```
+
+```{r torus.res}
+# ggplot() + geom_pointrange(torus.plot.df, mapping = aes(x=type, y=log2.odds_ratio, 
+#                            ymin=low.CI, ymax=high.CI, col=factor(QTL_type)), 
+#                            size = 1.5, fatten = 2) +
+#   ylim(0,8) + theme_minimal() + labs(y = 'log2 (fold of enrichment)', col = 'QTL type') +
+#   theme(axis.text=element_text(size=12), axis.title=element_text(size=14,face="bold")) +
+#   coord_flip()
+
+ggplot(torus.plot.df, aes(x=QTL_type, y=log2.odds_ratio, fill=factor(annotation_type))) + 
+    geom_bar(stat="identity", position=position_dodge()) + 
+    geom_errorbar(aes(ymin=low.CI, ymax=high.CI), width=.1, position=position_dodge(.9), size = 1) +
+    ylim(0,8) + theme_classic() + labs(y = 'log2 (fold of enrichment)', fill = 'annotation') +
+    theme(axis.text = element_text(size=12), axis.title.x = element_blank(), 
+          axis.title = element_text(size=14,face="bold"), 
+          legend.text = element_text(size = 11), legend.title = element_text(size = 12,face = 'bold'))
+```
+

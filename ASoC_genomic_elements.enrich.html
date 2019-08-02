@@ -850,7 +850,18 @@ fold.ggplot$snp.type &lt;- factor(fold.ggplot$snp.type,
 ggplot(data = fold.ggplot, aes(x=snp.type,y=fold, color=model, shape=annotation)) +
   geom_point(size = 4) + labs(x = &#39;ASoC SNP type&#39;,y = &#39;log10(fold of enrichment)&#39;) +
   theme(axis.text=element_text(size=12),axis.title=element_text(size=14,face=&quot;bold&quot;))</code></pre>
-<p><img src="Figs/unnamed-chunk-28-1.png" width="576" style="display: block; margin: auto;" /></p>
+<p><img src="Figs/unnamed-chunk-10-1.png" width="576" style="display: block; margin: auto;" /></p>
+<p>Formal plot for the paper:</p>
+<pre class="r"><code>fold.25 &lt;- fold.ggplot[c(7,8,10,11),]
+fold.25$snp.type &lt;- as.character(fold.25$snp.type)
+fold.25$snp.type[c(2,4)] &lt;- &#39;specific&#39;
+fold.25$snp.type &lt;- factor(fold.25$snp.type)
+ggplot(data = fold.25, aes(x=snp.type, y=fold, color=annotation, shape=annotation)) +
+  geom_point(size = 4) + theme_bw() +
+  labs(x = &#39;ASoC SNP type&#39;,y = expression(&#39;log&#39;[10]*&#39; (fold of enrichment)&#39;)) +
+  theme(axis.text=element_text(size=12),axis.title=element_text(size=14),
+        legend.text = element_text(size = 11), legend.title = element_text(size = 12,face = &#39;bold&#39;))</code></pre>
+<p><img src="Figs/unnamed-chunk-11-1.png" width="576" style="display: block; margin: auto;" /></p>
 </div>
 
 

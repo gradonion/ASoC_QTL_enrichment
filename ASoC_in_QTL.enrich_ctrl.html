@@ -956,9 +956,13 @@ pi1_pval$type &lt;- rep(c(&#39;eQTL&#39;,&#39;mQTL&#39;,&#39;haQTL&#39;), each=n
 pi1_pval$thres &lt;- factor(pi1_pval$thres)
 pi1_pval$thres &lt;- relevel(pi1_pval$thres,&#39;random&#39;)
 ggplot(pi1_pval, aes(x=factor(type), y=pi1, fill = thres)) + 
-  geom_bar(stat=&quot;identity&quot;, position = &#39;dodge&#39;) + theme_minimal() + # ylim(low=0,high=0.6) +
+  geom_bar(stat=&quot;identity&quot;, position = &#39;dodge&#39;) + theme_minimal() + 
   theme(axis.title.x = element_blank(), legend.position=&quot;bottom&quot;) + 
-  labs(fill = &quot;-log10(p value) cut-off&quot;) + ylim(0,0.5)</code></pre>
+  labs(y = expression(pi*&#39;1&#39;), fill = expression(-log[10]*&#39;(p-value) cutoff&#39;)) + ylim(0,0.5) + 
+  scale_fill_discrete(labels=c(&#39;random&#39;,&#39;2&#39;,&#39;3&#39;,&#39;4&#39;,&#39;5&#39;,&#39;positive (2.6)&#39;)) +
+  theme(axis.text = element_text(size=12), axis.title.x = element_blank(), 
+        axis.title = element_text(size=14,face=&quot;bold&quot;), 
+        legend.text = element_text(size = 11), legend.title = element_text(size = 12,face = &#39;bold&#39;))</code></pre>
 <p><img src="Figs/combined%20pval-1.png" width="768" style="display: block; margin: auto;" /></p>
 </div>
 <div id="varing-asoc-fdr-threshold" class="section level3">
@@ -1134,14 +1138,21 @@ names(torus.plot.df)[2] &lt;- &#39;log2.odds_ratio&#39;
 torus.plot.df$QTL_type = rep(c(&#39;eQTL&#39;,&#39;mQTL&#39;,&#39;haQTL&#39;),times = 2)
 torus.plot.df &lt;- torus.plot.df[c(1,4,2,5,3,6),]
 torus.plot.df$type &lt;- c(&#39;eQTL_ASoC&#39;,&#39;eQTL_OCR&#39;,&#39;haQTL_ASoC&#39;,&#39;haQTL_OCR&#39;,&#39;mQTL_ASoC&#39;,&#39;mQTL_OCR&#39;)
-torus.plot.df$type &lt;- factor(torus.plot.df$type,
-                             levels = c(&#39;eQTL_ASoC&#39;,&#39;eQTL_OCR&#39;,&#39;haQTL_ASoC&#39;,&#39;haQTL_OCR&#39;,&#39;mQTL_ASoC&#39;,&#39;mQTL_OCR&#39;))
-ggplot() + geom_pointrange(torus.plot.df, mapping = aes(x=type, y=log2.odds_ratio, 
-                           ymin=low.CI, ymax=high.CI, col=factor(QTL_type)), 
-                           size = 1.5, fatten = 2) +
-  ylim(0,8) + theme_minimal() + labs(y = &#39;log2 (fold of enrichment)&#39;, col = &#39;QTL type&#39;) +
-  theme(axis.text=element_text(size=12), axis.title=element_text(size=14,face=&quot;bold&quot;)) +
-  coord_flip()</code></pre>
+torus.plot.df$annotation_type &lt;- rep(c(&#39;ASoC&#39;,&#39;OCR&#39;),times = 3)</code></pre>
+<pre class="r"><code># ggplot() + geom_pointrange(torus.plot.df, mapping = aes(x=type, y=log2.odds_ratio, 
+#                            ymin=low.CI, ymax=high.CI, col=factor(QTL_type)), 
+#                            size = 1.5, fatten = 2) +
+#   ylim(0,8) + theme_minimal() + labs(y = &#39;log2 (fold of enrichment)&#39;, col = &#39;QTL type&#39;) +
+#   theme(axis.text=element_text(size=12), axis.title=element_text(size=14,face=&quot;bold&quot;)) +
+#   coord_flip()
+
+ggplot(torus.plot.df, aes(x=QTL_type, y=log2.odds_ratio, fill=factor(annotation_type))) + 
+    geom_bar(stat=&quot;identity&quot;, position=position_dodge()) + 
+    geom_errorbar(aes(ymin=low.CI, ymax=high.CI), width=.1, position=position_dodge(.9), size = 1) +
+    ylim(0,8) + theme_classic() + labs(y = &#39;log2 (fold of enrichment)&#39;, fill = &#39;annotation&#39;) +
+    theme(axis.text = element_text(size=12), axis.title.x = element_blank(), 
+          axis.title = element_text(size=14,face=&quot;bold&quot;), 
+          legend.text = element_text(size = 11), legend.title = element_text(size = 12,face = &#39;bold&#39;))</code></pre>
 <p><img src="Figs/torus.res-1.png" width="768" style="display: block; margin: auto;" /></p>
 </div>
 
