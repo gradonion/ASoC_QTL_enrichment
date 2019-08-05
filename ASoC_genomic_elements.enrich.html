@@ -422,7 +422,7 @@ library(ggplot2)
 library(knitr)
 library(kableExtra)
 options(stringsAsFactors = F)</code></pre>
-<p>Baesed on ASoC SNPs identified in each neuronal cell type (NSC,CN,DN and GA), we have the following hypothesis that cell-type-specific ASoC SNPs are highly enriched in enhancers as oppose to ASoC SNPs shared among several cell types.</p>
+<p>Based on ASoC SNPs identified in each neuronal cell type (NSC,CN,DN and GA), we have the following hypothesis that cell-type-specific ASoC SNPs are more enriched in enhancers than ASoC SNPs shared among several cell types.</p>
 <p>To test this hypothesis, we first obtain chromatin state annotation imputed from the Roadmap Epigenomics Project <a href="https://egg2.wustl.edu/roadmap/web_portal/">here</a>. To match our neuronal cell types under early development, we pick a matching tissue type: E081 (Fetal Brain Male). We conduct our analysis using both the 15-state model and the 25-state model.</p>
 <ul>
 <li><p>Under the 15-state model, we define a region to be enhancer if its chromatin state belongs to 6 or 7, and promoter if its chromatin state belongs to 1 or 2.</p></li>
@@ -840,28 +840,42 @@ log10(fold_enrich)
 fold.df2 &lt;- rbind(fold.shared25,fold.spec_new25,fold.spec25)
 fold.ggplot &lt;- data.frame(snp.type = 
                           rep(c(&#39;shared&#39;,&#39;specific_2&#39;,&#39;specific_1&#39;),time = 4))
-fold.ggplot$fold &lt;- c(fold.df1$enhancer,fold.df1$promoter,
+fold.ggplot$log10_fold &lt;- c(fold.df1$enhancer,fold.df1$promoter,
                       fold.df2$enhancer,fold.df2$promoter)
 fold.ggplot$annotation &lt;- factor(rep(c(&#39;enhancer&#39;,&#39;promoter&#39;,
                                 &#39;enhancer&#39;,&#39;promoter&#39;),each = 3))
 fold.ggplot$model &lt;- factor(rep(c(&#39;15-state&#39;,&#39;25-state&#39;),each = 6))
 fold.ggplot$snp.type &lt;- factor(fold.ggplot$snp.type,
                                levels = c(&#39;shared&#39;,&#39;specific_2&#39;,&#39;specific_1&#39;))
-ggplot(data = fold.ggplot, aes(x=snp.type,y=fold, color=model, shape=annotation)) +
-  geom_point(size = 4) + labs(x = &#39;ASoC SNP type&#39;,y = &#39;log10(fold of enrichment)&#39;) +
-  theme(axis.text=element_text(size=12),axis.title=element_text(size=14,face=&quot;bold&quot;))</code></pre>
+ggplot(data = fold.ggplot, aes(x=snp.type,y=log10_fold, color=model, shape=annotation)) +
+  geom_point(size = 4) + labs(x = &#39;ASoC SNP type&#39;,y = expression(log[10]*&#39; (fold of enrichment)&#39;)) + 
+  theme_bw() +
+  theme(axis.text=element_text(size=12),axis.title=element_text(size=14,face=&quot;bold&quot;),
+        legend.text = element_text(size = 11), legend.title = element_text(size = 12,face = &#39;bold&#39;))</code></pre>
 <p><img src="Figs/unnamed-chunk-10-1.png" width="576" style="display: block; margin: auto;" /></p>
-<p>Formal plot for the paper:</p>
+<p>Formal plot for the paper, using only the 25-state annotation model and the new definition of ASoC SNP cell-type specificity (specific-2):</p>
 <pre class="r"><code>fold.25 &lt;- fold.ggplot[c(7,8,10,11),]
 fold.25$snp.type &lt;- as.character(fold.25$snp.type)
 fold.25$snp.type[c(2,4)] &lt;- &#39;specific&#39;
 fold.25$snp.type &lt;- factor(fold.25$snp.type)
-ggplot(data = fold.25, aes(x=snp.type, y=fold, color=annotation, shape=annotation)) +
-  geom_point(size = 4) + theme_bw() +
-  labs(x = &#39;ASoC SNP type&#39;,y = expression(&#39;log&#39;[10]*&#39; (fold of enrichment)&#39;)) +
+fold.25$log2_fold &lt;- log2(10^fold.25$log10_fold)
+# fold.25$fold &lt;- 10^fold.25$log10_fold
+
+ggplot(data = fold.25, aes(x=snp.type, y=log2_fold, fill=annotation)) +
+  geom_bar(stat=&quot;identity&quot;, position = &#39;dodge&#39;) + theme_classic() +
+  labs(x = &#39;ASoC SNP type&#39;,y = expression(log[2]*&#39; (fold of enrichment)&#39;)) +
   theme(axis.text=element_text(size=12),axis.title=element_text(size=14),
         legend.text = element_text(size = 11), legend.title = element_text(size = 12,face = &#39;bold&#39;))</code></pre>
 <p><img src="Figs/unnamed-chunk-11-1.png" width="576" style="display: block; margin: auto;" /></p>
+<p>Plotting the percentage of SNPs in enhancer/promoter regions for the shared/cell-type-specific case:</p>
+<pre class="r"><code>fold.25$percentage &lt;- c(43/256,646/2237,158/256,749/2237)
+
+ggplot(data = fold.25, aes(x=snp.type, y=percentage, fill=annotation)) +
+  geom_bar(stat=&quot;identity&quot;, position = &#39;dodge&#39;) + theme_classic() +
+  labs(x = &#39;ASoC SNP type&#39;,y = &#39;% of SNPs in annotation&#39;) +
+  theme(axis.text=element_text(size=12),axis.title=element_text(size=14),
+        legend.text = element_text(size = 11), legend.title = element_text(size = 12,face = &#39;bold&#39;))</code></pre>
+<p><img src="Figs/unnamed-chunk-12-1.png" width="576" style="display: block; margin: auto;" /></p>
 </div>
 
 
